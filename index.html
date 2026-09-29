@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Kotoba Shokyuu 2 Bab 16 - 4 Sesi PG</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            padding: 35px 30px;
+            max-width: 750px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .container::before {
+            content: '';
+            display: block;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            border-radius: 25px 25px 0 0;
+            margin: -35px -30px 20px -30px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .title { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+        .title span { color: #e94560; }
+        .stats { display: flex; gap: 12px; font-size: 13px; font-weight: 600; color: #555; }
+        .stats div { background: #f0f0f0; padding: 3px 12px; border-radius: 20px; }
+        .stats .num { color: #e94560; font-size: 16px; }
+        .session-badge {
+            background: #e94560;
+            color: white;
+            padding: 5px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .session-badge .sub { font-weight: 400; font-size: 12px; }
+        .session-badge.sesi2 { background: #f39c12; }
+        .session-badge.sesi3 { background: #9b59b6; }
+        .session-badge.sesi4 { background: #2ecc71; }
+        .progress-bar { width: 100%; height: 6px; background: #e0e0e0; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #e94560, #feca57); border-radius: 10px; transition: width 0.4s; width: 0%; }
+        .timer-container { text-align: center; margin-bottom: 12px; }
+        .timer {
+            display: inline-block;
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a2e;
+            background: #f8f9fa;
+            padding: 2px 20px;
+            border-radius: 12px;
+            min-width: 70px;
+        }
+        .timer.warning { color: #e94560; animation: blink 0.8s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .question-number { font-size: 12px; color: #888; text-align: center; margin-bottom: 4px; }
+        .question-text {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a1a2e;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 18px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .question-text .ind { color: #2c3e50; }
+        .question-text .jp { color: #e94560; }
+        .question-text .kanji { color: #9b59b6; font-size: 36px; }
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        @media (max-width: 500px) { .options { grid-template-columns: 1fr; } }
+        .option-btn {
+            padding: 14px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a2e;
+            transition: all 0.3s;
+            text-align: center;
+            word-break: break-word;
+        }
+        .option-btn:hover:not(.disabled) {
+            border-color: #e94560;
+            background: #fff5f5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233,69,96,0.15);
+        }
+        .option-btn.correct { border-color: #2ecc71; background: #d4edda; color: #155724; }
+        .option-btn.wrong { border-color: #e74c3c; background: #f8d7da; color: #721c24; }
+        .option-btn.disabled { cursor: not-allowed; opacity: 0.7; }
+        .option-btn.show-correct { border-color: #2ecc71; background: #d4edda; }
+        .feedback {
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            display: none;
+            min-height: 42px;
+        }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #d4edda; color: #155724; }
+        .feedback.wrong { background: #f8d7da; color: #721c24; }
+        .btn-next {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #e94560, #c0392b);
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,69,96,0.35); }
+        .result-screen { display: none; text-align: center; padding: 15px 0; }
+        .result-screen .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e94560, #feca57);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 10px 40px rgba(233,69,96,0.3);
+        }
+        .result-screen .score-circle .score-text { font-size: 42px; font-weight: 800; color: white; }
+        .result-screen .score-circle .score-text small { font-size: 18px; font-weight: 400; }
+        .result-screen h2 { font-size: 22px; color: #e94560; margin-bottom: 5px; }
+        .result-screen h3 { font-size: 20px; color: #1a1a2e; margin-bottom: 5px; }
+        .result-screen p { color: #666; font-size: 15px; margin-bottom: 5px; }
+        .result-screen .wrong-list {
+            margin-top: 15px;
+            text-align: left;
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .result-screen .wrong-list .item { padding: 5px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .result-screen .wrong-list .item:last-child { border-bottom: none; }
+        .result-screen .wrong-list .session-divider {
+            font-weight: 700;
+            color: #e94560;
+            padding: 10px 0 5px 0;
+            border-bottom: 2px solid #e94560;
+            margin-bottom: 5px;
+        }
+        .btn-restart {
+            margin-top: 15px;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #e94560, #c0392b);
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,69,96,0.35); }
+        .start-screen { text-align: center; padding: 15px 0; }
+        .start-screen h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 5px; }
+        .start-screen h1 span { color: #e94560; }
+        .start-screen p { color: #666; font-size: 15px; margin-bottom: 5px; }
+        .start-screen .rules {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin: 12px 0 20px;
+            text-align: left;
+            font-size: 14px;
+            color: #555;
+        }
+        .start-screen .rules li { margin: 4px 0; list-style: none; }
+        .btn-start {
+            padding: 14px 50px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #e94560, #c0392b);
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 10px 35px rgba(233,69,96,0.4); }
+        .hidden { display: none !important; }
+        .session-info {
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .session-transition {
+            text-align: center;
+            padding: 30px 20px;
+            background: #f8f9fa;
+            border-radius: 16px;
+            margin: 10px 0;
+        }
+        .session-transition .big-icon { font-size: 48px; }
+        .session-transition h3 { font-size: 24px; color: #1a1a2e; margin: 10px 0; }
+        .session-transition p { color: #666; font-size: 16px; }
+        .btn-continue {
+            margin-top: 15px;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #e94560, #c0392b);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-continue:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,69,96,0.35); }
+        .identitas-form {
+            text-align: center;
+            padding: 20px 0 10px 0;
+        }
+        .form-group {
+            margin-bottom: 14px;
+            text-align: left;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #1a1a2e;
+            background: white;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #e94560;
+            box-shadow: 0 0 0 3px rgba(233,69,96,0.15);
+        }
+        .btn-submit-identitas {
+            padding: 14px 50px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #e94560, #c0392b);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn-submit-identitas:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233,69,96,0.35);
+        }
+        .btn-submit-identitas:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error-msg {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+        }
+        .error-msg.show { display: block; }
+        .logo-pembuka {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            display: block;
+            border: 4px solid #e94560;
+            box-shadow: 0 8px 25px rgba(233,69,96,0.3);
+        }
+        @media (max-width: 500px) {
+            .logo-pembuka { width: 140px; height: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+    <div class="start-screen" id="startScreen">
+        <img src="logo.png" alt="Logo Kuis" class="logo-pembuka">
+        <h1>Kuis <span>Kotoba</span></h1>
+        <p>Shokyuu 2 Bab 16 - Lingkungan & Daur Ulang ♻️</p>
+        
+        <div class="identitas-form">
+            <div class="form-group">
+                <label for="inputNama">👤 Nama Lengkap</label>
+                <input type="text" id="inputNama" placeholder="Masukkan nama Anda...">
+            </div>
+            <div class="form-group">
+                <label for="inputKelas">🏫 Kelas</label>
+                <input type="text" id="inputKelas" placeholder="Masukkan kelas Anda...">
+            </div>
+            <div id="errorIdentitas" class="error-msg">⚠️ Nama dan kelas harus diisi!</div>
+            <button class="btn-submit-identitas" id="btnMulai" onclick="submitIdentitas()">Mulai Kuis 🚀</button>
+        </div>
+        
+        <div class="rules" style="margin-top:15px;">
+            <li>📝 <strong>162 soal</strong> total (4 sesi, semua PG)</li>
+            <li>🇮🇩→🇯🇵 <strong>Sesi 1:</strong> 71 soal (Indonesia → Jepang)</li>
+            <li>🇯🇵→🇮🇩 <strong>Sesi 2:</strong> 71 soal (Jepang → Indonesia)</li>
+            <li>🈶→ひ <strong>Sesi 3:</strong> 10 soal (Kanji → Hiragana)</li>
+            <li>ひ→🈶 <strong>Sesi 4:</strong> 10 soal (Hiragana → Kanji)</li>
+            <li>⏱️ <strong>10 detik</strong> per soal</li>
+        </div>
+    </div>
+
+    <div id="quizScreen" class="hidden">
+        <div class="header">
+            <div class="title">📚 Kuis <span>Shokyuu 2 Bab 16</span></div>
+            <div class="stats">
+                <div>✅ <span class="num" id="correctCount">0</span></div>
+                <div>📌 <span class="num" id="currentNum">1</span>/<span id="totalNum">162</span></div>
+            </div>
+        </div>
+        
+        <div class="session-badge" id="sessionBadge">
+            🇮🇩→🇯🇵 <span class="sub">Sesi 1 • PG</span>
+        </div>
+        
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="timer-container"><div class="timer" id="timerDisplay">10</div></div>
+        <div class="question-number" id="qNumber">Soal 1 dari 162</div>
+        <div class="session-info" id="sessionInfo">🇮🇩 Indonesia → 🇯🇵 Jepang (Pilih jawaban)</div>
+        
+        <div class="question-text" id="questionText">
+            <span id="mainText">mematikan (lampu)</span>
+        </div>
+        
+        <div class="options" id="optionsContainer"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="btn-next" id="btnNext" onclick="nextQuestion()">Soal Berikutnya →</button>
+    </div>
+
+    <div id="transitionScreen" class="hidden">
+        <div class="session-transition">
+            <div class="big-icon">🔄</div>
+            <h3 id="transTitle">Sesi 1 Selesai! 🎉</h3>
+            <p>Skor sementara: <strong id="tempScore">0</strong></p>
+            <p style="margin-top:10px;" id="transDesc">Siap untuk sesi berikutnya?</p>
+            <button class="btn-continue" onclick="startNextSession()">Lanjut →</button>
+        </div>
+    </div>
+
+    <div class="result-screen" id="resultScreen">
+        <div class="score-circle"><div class="score-text"><span id="finalScore">0</span><small>/162</small></div></div>
+        <h2 id="resultName">👤 Nama Siswa</h2>
+        <h3 id="resultTitle">Luar Biasa! 🌟</h3>
+        <p id="resultDesc">Kamu hebat dalam kosakata Shokyuu 2 Bab 16!</p>
+        <div style="display:flex;justify-content:center;gap:15px;margin:10px 0;font-size:13px;color:#555;flex-wrap:wrap;">
+            <span>Sesi 1: <strong id="score1">0</strong>/71</span>
+            <span>Sesi 2: <strong id="score2">0</strong>/71</span>
+            <span>Sesi 3: <strong id="score3">0</strong>/10</span>
+            <span>Sesi 4: <strong id="score4">0</strong>/10</span>
+        </div>
+        <div class="wrong-list" id="wrongList"><div class="item">✅ Semua jawaban benar! 🎉</div></div>
+        <div style="margin-top:12px;font-size:14px;color:#2ecc71;">
+            ✅ Data telah disimpan ke Google Sheets
+        </div>
+        <button class="btn-restart" onclick="restartQuiz()">🔄 Ulangi Kuis</button>
+    </div>
+</div>
+
+<script>
+// ===== SESI 1 & 2: KOSAKATA (71 SOAL) =====
+const KOTOBA = [
+    { q: "mematikan (lampu)", a: "消す (けす)", b: "つける", c: "開ける (あける)", d: "閉める (しめる)", answer: "a" },
+    { q: "Jangan lupa", a: "忘れずに (わすれずに)", b: "覚えて (おぼえて)", c: "思い出して (おもいだして)", d: "気をつけて (きをつけて)", answer: "a" },
+    { q: "sedang berlangsung", a: "実施中 (じっしちゅう)", b: "準備中 (じゅんびちゅう)", c: "終了 (しゅうりょう)", d: "休止中 (きゅうしちゅう)", answer: "a" },
+    { q: "pakaian ringan dan tipis", a: "軽装 (けいそう)", b: "重装 (じゅうそう)", c: "正装 (せいそう)", d: "制服 (せいふく)", answer: "a" },
+    { q: "pengaturan; setelan", a: "設定 (せってい)", b: "設定 (せってい)", c: "設定 (せってい)", d: "設定 (せってい)", answer: "a" },
+    { q: "penghematan listrik", a: "節電 (せつでん)", b: "節水 (せっすい)", c: "節約 (せつやく)", d: "省エネ (しょうエネ)", answer: "a" },
+    { q: "pencetakan dua sisi", a: "両面印刷 (りょうめんいんさつ)", b: "片面印刷 (かためんいんさつ)", c: "白黒印刷 (しろくろいんさつ)", d: "カラー印刷 (カラーいんさつ)", answer: "a" },
+    { q: "tas belanja plastik sekali pakai", a: "レジ袋 (レジぶくろ)", b: "紙袋 (かみぶくろ)", c: "ゴミ袋 (ごみぶくろ)", d: "エコバッグ", answer: "a" },
+    { q: "dikenakan biaya; berbayar", a: "有料化 (ゆうりょうか)", b: "無料化 (むりょうか)", c: "値上げ (ねあげ)", d: "値下げ (ねさげ)", answer: "a" },
+    { q: "membawa", a: "持参 (じさん)", b: "持ち帰り (もちかえり)", c: "持ってくる (もってくる)", d: "持ち上げる (もちあげる)", answer: "a" },
+    { q: "lingkungan", a: "環境 (かんきょう)", b: "自然 (しぜん)", c: "状況 (じょうきょう)", d: "風景 (ふうけい)", answer: "a" },
+    { q: "menghemat listrik", a: "節電する (せつでんする)", b: "節水する (せっすいする)", c: "節約する (せつやくする)", d: "省エネする (しょうエネする)", answer: "a" },
+    { q: "menghemat air", a: "節水する (せっすいする)", b: "節電する (せつでんする)", c: "節約する (せつやくする)", d: "省エネする (しょうエネする)", answer: "a" },
+    { q: "menghemat; melakukan penghematan", a: "節約する (せつやくする)", b: "節電する (せつでんする)", c: "節水する (せっすいする)", d: "貯める (ためる)", answer: "a" },
+    { q: "memilah", a: "分別する (ぶんべつする)", b: "分ける (わける)", c: "集める (あつめる)", d: "捨てる (すてる)", answer: "a" },
+    { q: "mengurangi", a: "減らす (へらす)", b: "増やす (ふやす)", c: "集める (あつめる)", d: "捨てる (すてる)", answer: "a" },
+    { q: "pengaturan / setelan temperatur", a: "設定温度 (せっていおんど)", b: "気温 (きおん)", c: "温度 (おんど)", d: "体温 (たいおん)", answer: "a" },
+    { q: "menurunkan", a: "下げる (さげる)", b: "上げる (あげる)", c: "高くする (たかくする)", d: "低くする (ひくくする)", answer: "a" },
+    { q: "mubazir", a: "もったいない", b: "すばらしい", c: "ありがたい", d: "めずらしい", answer: "a" },
+    { q: "kaleng", a: "缶 (かん)", b: "瓶 (びん)", c: "箱 (はこ)", d: "袋 (ふくろ)", answer: "a" },
+    { q: "dikumpulkan; mengumpulkan", a: "まとめる", b: "分ける (わける)", c: "捨てる (すてる)", d: "集める (あつめる)", answer: "a" },
+    { q: "mengalirkan (air); membuka (keran)", a: "出す (だす)", b: "止める (とめる)", c: "流す (ながす)", d: "注ぐ (そそぐ)", answer: "a" },
+    { q: "detergen; sabun pembersih", a: "洗剤 (せんざい)", b: "石鹸 (せっけん)", c: "シャンプー", d: "洗濯 (せんたく)", answer: "a" },
+    { q: "mematikan (air); menutup (keran)", a: "止める (とめる)", b: "出す (だす)", c: "流す (ながす)", d: "閉める (しめる)", answer: "a" },
+    { q: "membilas", a: "すすぐ", b: "洗う (あらう)", c: "流す (ながす)", d: "拭く (ふく)", answer: "a" },
+    { q: "membawa", a: "持ち歩く (もちあるく)", b: "持ってくる (もってくる)", c: "持ち上げる (もちあげる)", d: "持ち帰る (もちかえる)", answer: "a" },
+    { q: "dapat didaur ulang", a: "資源 (しげん)", b: "資源ごみ (しげんごみ)", c: "再生 (さいせい)", d: "リサイクル", answer: "a" },
+    { q: "cara memilah / memisahkan", a: "分け方 (わけかた)", b: "出し方 (だしかた)", c: "使い方 (つかいかた)", d: "読み方 (よみかた)", answer: "a" },
+    { q: "cara membuang", a: "出し方 (だしかた)", b: "分け方 (わけかた)", c: "使い方 (つかいかた)", d: "捨て方 (すてかた)", answer: "a" },
+    { q: "titik pengumpulan", a: "集積所 (しゅうせきじょ)", b: "収集日 (しゅうしゅうび)", c: "集める (あつめる)", d: "集まり (あつまり)", answer: "a" },
+    { q: "hari pengumpulan", a: "収集日 (しゅうしゅうび)", b: "集積所 (しゅうせきじょ)", c: "曜日 (ようび)", d: "日付 (ひづけ)", answer: "a" },
+    { q: "sampah yang dapat didaur ulang", a: "資源ごみ (しげんごみ)", b: "可燃ごみ (かねんごみ)", c: "不燃ごみ (ふねんごみ)", d: "粗大ごみ (そだいごみ)", answer: "a" },
+    { q: "jenis", a: "種類 (しゅるい)", b: "形 (かたち)", c: "色 (いろ)", d: "大きさ (おおきさ)", answer: "a" },
+    { q: "memilah; membagi", a: "分ける (わける)", b: "まとめる", c: "集める (あつめる)", d: "捨てる (すてる)", answer: "a" },
+    { q: "tali", a: "ひも", b: "糸 (いと)", c: "ロープ", d: "テープ", answer: "a" },
+    { q: "mengikat", a: "しばる", b: "結ぶ (むすぶ)", c: "つなぐ", d: "くくる", answer: "a" },
+    { q: "koran", a: "新聞 (しんぶん)", b: "雑誌 (ざっし)", c: "本 (ほん)", d: "手紙 (てがみ)", answer: "a" },
+    { q: "majalah", a: "雑誌 (ざっし)", b: "新聞 (しんぶん)", c: "本 (ほん)", d: "辞書 (じしょ)", answer: "a" },
+    { q: "isi", a: "中身 (なかみ)", b: "外側 (そとがわ)", c: "表面 (ひょうめん)", d: "中 (なか)", answer: "a" },
+    { q: "botol kaca", a: "びん", b: "缶 (かん)", c: "ペットボトル", d: "箱 (はこ)", answer: "a" },
+    { q: "tutup botol plastik", a: "キャップ", b: "フタ", c: "栓 (せん)", d: "カバー", answer: "a" },
+    { q: "label", a: "ラベル", b: "シール", c: "タグ", d: "マーク", answer: "a" },
+    { q: "menghancurkan", a: "つぶす", b: "壊す (こわす)", c: "割る (わる)", d: "切る (きる)", answer: "a" },
+    { q: "kemasan minuman karton", a: "紙パック (かみパック)", b: "牛乳パック (ぎゅうにゅうパック)", c: "段ボール", d: "紙袋 (かみぶくろ)", answer: "a" },
+    { q: "memotong terbuka", a: "切り開く (きりひらく)", b: "切る (きる)", c: "開ける (あける)", d: "裂く (さく)", answer: "a" },
+    { q: "nampan makanan", a: "食品トレイ (しょくひんトレイ)", b: "お皿 (おさら)", c: "容器 (ようき)", d: "パック", answer: "a" },
+    { q: "sampah yang dapat dibakar", a: "可燃ごみ (かねんごみ)", b: "不燃ごみ (ふねんごみ)", c: "資源ごみ (しげんごみ)", d: "粗大ごみ (そだいごみ)", answer: "a" },
+    { q: "sampah sisa makanan", a: "生ごみ (なまごみ)", b: "可燃ごみ (かねんごみ)", c: "不燃ごみ (ふねんごみ)", d: "資源ごみ (しげんごみ)", answer: "a" },
+    { q: "dikeringkan; mengeringkan", a: "水を切る (みずをきる)", b: "乾かす (かわかす)", c: "干す (ほす)", d: "拭く (ふく)", answer: "a" },
+    { q: "kain", a: "布 (ぬの)", b: "紙 (かみ)", c: "糸 (いと)", d: "革 (かわ)", answer: "a" },
+    { q: "dibiarkan terendam; diserap", a: "しみこませる", b: "浸す (ひたす)", c: "濡らす (ぬらす)", d: "溶かす (とかす)", answer: "a" },
+    { q: "dipadatkan", a: "固める (かためる)", b: "柔らかくする (やわらかくする)", c: "崩す (くずす)", d: "溶かす (とかす)", answer: "a" },
+    { q: "mendaur ulang", a: "再生する (さいせいする)", b: "再利用する (さいりようする)", c: "リサイクルする", d: "使う (つかう)", answer: "a" },
+    { q: "jumlah kecil", a: "少量 (しょうりょう)", b: "多量 (たりょう)", c: "半分 (はんぶん)", d: "全部 (ぜんぶ)", answer: "a" },
+    { q: "tanaman", a: "植木 (うえき)", b: "花 (はな)", c: "草 (くさ)", d: "木 (き)", answer: "a" },
+    { q: "cabang", a: "枝 (えだ)", b: "葉 (は)", c: "幹 (みき)", d: "根 (ね)", answer: "a" },
+    { q: "daun", a: "葉 (は)", b: "枝 (えだ)", c: "花 (はな)", d: "実 (み)", answer: "a" },
+    { q: "bekas", a: "使い古し (つかいふるし)", b: "新品 (しんぴん)", c: "中古 (ちゅうこ)", d: "古い (ふるい)", answer: "a" },
+    { q: "zat pemadat", a: "凝固剤 (ぎょうこざい)", b: "洗剤 (せんざい)", c: "漂白剤 (ひょうはくざい)", d: "添加物 (てんかぶつ)", answer: "a" },
+    { q: "wadah", a: "容器 (ようき)", b: "箱 (はこ)", c: "袋 (ふくろ)", d: "缶 (かん)", answer: "a" },
+    { q: "sampah yang tidak dapat dibakar", a: "不燃ごみ (ふねんごみ)", b: "可燃ごみ (かねんごみ)", c: "資源ごみ (しげんごみ)", d: "粗大ごみ (そだいごみ)", answer: "a" },
+    { q: "pecah", a: "割れる (われる)", b: "壊れる (こわれる)", c: "折れる (おれる)", d: "裂ける (さける)", answer: "a" },
+    { q: "membungkus", a: "包む (つつむ)", b: "入れる (いれる)", c: "かぶせる", d: "のせる", answer: "a" },
+    { q: "berbahaya; bahaya", a: "危険 (きけん)", b: "安全 (あんぜん)", c: "注意 (ちゅうい)", d: "警告 (けいこく)", answer: "a" },
+    { q: "baterai kering", a: "乾電池 (かんでんち)", b: "電池 (でんち)", c: "バッテリー", d: "充電池 (じゅうでんち)", answer: "a" },
+    { q: "pisau; benda tajam", a: "刃物 (はもの)", b: "ナイフ", c: "包丁 (ほうちょう)", d: "はさみ", answer: "a" },
+    { q: "porselen; keramik", a: "陶磁器 (とうじき)", b: "ガラス", c: "金属 (きんぞく)", d: "プラスチック", answer: "a" },
+    { q: "bohlam", a: "電球 (でんきゅう)", b: "蛍光灯 (けいこうとう)", c: "ライト", d: "ランプ", answer: "a" },
+    { q: "logam", a: "金属 (きんぞく)", b: "鉄 (てつ)", c: "アルミ", d: "銅 (どう)", answer: "a" }
+];
+
+// ===== SESI 3 & 4: KANJI ↔ HIRAGANA (10 SOAL) =====
+const KANJI_HIRAGANA = [
+    { kanji: "温度", hiragana: "おんど" },
+    { kanji: "消す", hiragana: "けす" },
+    { kanji: "設定しています", hiragana: "せっていしています" },
+    { kanji: "分けて", hiragana: "わけて" },
+    { kanji: "出します", hiragana: "だします" },
+    { kanji: "燃える", hiragana: "もえる" },
+    { kanji: "危険", hiragana: "きけん" },
+    { kanji: "捨てる", hiragana: "すてる" },
+    { kanji: "決めます", hiragana: "きめます" },
+    { kanji: "4種類", hiragana: "よんしゅるい" }
+];
+
+// ===== VARIABLES =====
+let questions = [];
+let currentIndex = 0;
+let score = 0;
+let sesiScores = [0, 0, 0, 0];
+let timer = 10;
+let timerInterval = null;
+let isAnswered = false;
+let wrongAnswers = [];
+let currentSession = 1;
+const TOTAL = 162;
+const SESI1 = 71;
+const SESI2 = 142;
+const SESI3 = 152;
+const SESI4 = 162;
+let userNama = '';
+let userKelas = '';
+
+// ===== GOOGLE APPS SCRIPT URL =====
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcyG5HJMtK0ZCMDyP1rFmXwJrxQpY5hOHOwIYU66h6cbxit_cKBJK9nuohzxDk28o/exec';
+
+// ===== DOM =====
+const startScreen = document.getElementById('startScreen');
+const quizScreen = document.getElementById('quizScreen');
+const transitionScreen = document.getElementById('transitionScreen');
+const resultScreen = document.getElementById('resultScreen');
+const mainText = document.getElementById('mainText');
+const optionsContainer = document.getElementById('optionsContainer');
+const feedback = document.getElementById('feedback');
+const btnNext = document.getElementById('btnNext');
+const timerDisplay = document.getElementById('timerDisplay');
+const correctCount = document.getElementById('correctCount');
+const currentNum = document.getElementById('currentNum');
+const totalNum = document.getElementById('totalNum');
+const progressFill = document.getElementById('progressFill');
+const qNumber = document.getElementById('qNumber');
+const finalScore = document.getElementById('finalScore');
+const resultName = document.getElementById('resultName');
+const resultTitle = document.getElementById('resultTitle');
+const resultDesc = document.getElementById('resultDesc');
+const wrongList = document.getElementById('wrongList');
+const sessionBadge = document.getElementById('sessionBadge');
+const sessionInfo = document.getElementById('sessionInfo');
+const tempScore = document.getElementById('tempScore');
+const transTitle = document.getElementById('transTitle');
+const transDesc = document.getElementById('transDesc');
+const score1 = document.getElementById('score1');
+const score2 = document.getElementById('score2');
+const score3 = document.getElementById('score3');
+const score4 = document.getElementById('score4');
+const inputNama = document.getElementById('inputNama');
+const inputKelas = document.getElementById('inputKelas');
+const btnMulai = document.getElementById('btnMulai');
+const errorIdentitas = document.getElementById('errorIdentitas');
+
+function submitIdentitas() {
+    const nama = inputNama.value.trim();
+    const kelas = inputKelas.value.trim();
+    
+    if (nama === '' || kelas === '') {
+        errorIdentitas.classList.add('show');
+        return;
+    }
+    
+    errorIdentitas.classList.remove('show');
+    userNama = nama;
+    userKelas = kelas;
+    btnMulai.disabled = true;
+    btnMulai.textContent = '⏳ Memuat...';
+    
+    setTimeout(() => {
+        startQuiz();
+    }, 500);
+}
+
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function buildQuestions() {
+    const sesi1 = shuffle([...KOTOBA]).map(q => ({ ...q, mode: 'id_to_jp' }));
+    const sesi2 = shuffle([...KOTOBA]).map(q => ({ ...q, mode: 'jp_to_id' }));
+    const sesi3 = shuffle([...KANJI_HIRAGANA]).map(q => ({
+        q: q.kanji,
+        answer: q.hiragana,
+        mode: 'kanji_to_hiragana'
+    }));
+    const sesi4 = shuffle([...KANJI_HIRAGANA]).map(q => ({
+        q: q.hiragana,
+        answer: q.kanji,
+        mode: 'hiragana_to_kanji'
+    }));
+    return [...sesi1, ...sesi2, ...sesi3, ...sesi4];
+}
+
+function loadQuestion() {
+    if (currentIndex >= questions.length) { endQuiz(); return; }
+
+    const q = questions[currentIndex];
+    
+    if (currentIndex < SESI1) currentSession = 1;
+    else if (currentIndex < SESI2) currentSession = 2;
+    else if (currentIndex < SESI3) currentSession = 3;
+    else currentSession = 4;
+    
+    timer = 10;
+    timerDisplay.textContent = timer;
+    timerDisplay.classList.remove('warning');
+
+    if (currentSession === 1) {
+        sessionBadge.innerHTML = '🇮🇩→🇯🇵 <span class="sub">Sesi 1 • PG</span>';
+        sessionBadge.className = 'session-badge';
+        sessionInfo.textContent = '🇮🇩 Indonesia → 🇯🇵 Jepang (Pilih jawaban)';
+        mainText.innerHTML = `<span class="ind">${q.q}</span>`;
+        
+        const opts = shuffle([q.a, q.b, q.c, q.d]);
+        optionsContainer.innerHTML = '';
+        optionsContainer.style.display = 'grid';
+        opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.dataset.value = opt;
+            btn.onclick = () => selectOption(btn, opt, q[ q.answer ]);
+            optionsContainer.appendChild(btn);
+        });
+    } else if (currentSession === 2) {
+        sessionBadge.innerHTML = '🇯🇵→🇮🇩 <span class="sub">Sesi 2 • PG</span>';
+        sessionBadge.className = 'session-badge sesi2';
+        sessionInfo.textContent = '🇯🇵 Jepang → 🇮🇩 Indonesia (Pilih arti)';
+        
+        const correctJp = q[ q.answer ];
+        mainText.innerHTML = `<span class="jp">${correctJp}</span>`;
+        
+        const allInd = [...new Set(KOTOBA.map(item => item.q))];
+        const correctInd = q.q;
+        let wrongs = allInd.filter(ind => ind !== correctInd);
+        wrongs = shuffle(wrongs).slice(0, 3);
+        const opts = shuffle([correctInd, ...wrongs]);
+        
+        optionsContainer.innerHTML = '';
+        optionsContainer.style.display = 'grid';
+        opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.dataset.value = opt;
+            btn.onclick = () => selectOption(btn, opt, correctInd);
+            optionsContainer.appendChild(btn);
+        });
+    } else if (currentSession === 3) {
+        sessionBadge.innerHTML = '🈶→ひ <span class="sub">Sesi 3 • PG</span>';
+        sessionBadge.className = 'session-badge sesi3';
+        sessionInfo.textContent = '🈶 Kanji → ひ Hiragana (Pilih cara baca)';
+        mainText.innerHTML = `<span class="kanji">${q.q}</span>`;
+        
+        const allHira = [...new Set(KANJI_HIRAGANA.map(item => item.hiragana))];
+        const correct = q.answer;
+        let wrongs = allHira.filter(h => h !== correct);
+        wrongs = shuffle(wrongs).slice(0, 3);
+        const opts = shuffle([correct, ...wrongs]);
+        
+        optionsContainer.innerHTML = '';
+        optionsContainer.style.display = 'grid';
+        opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.dataset.value = opt;
+            btn.onclick = () => selectOption(btn, opt, correct);
+            optionsContainer.appendChild(btn);
+        });
+    } else {
+        sessionBadge.innerHTML = 'ひ→🈶 <span class="sub">Sesi 4 • PG</span>';
+        sessionBadge.className = 'session-badge sesi4';
+        sessionInfo.textContent = 'ひ Hiragana → 🈶 Kanji (Pilih kanji)';
+        mainText.innerHTML = `<span class="jp">${q.q}</span>`;
+        
+        const allKanji = [...new Set(KANJI_HIRAGANA.map(item => item.kanji))];
+        const correct = q.answer;
+        let wrongs = allKanji.filter(k => k !== correct);
+        wrongs = shuffle(wrongs).slice(0, 3);
+        const opts = shuffle([correct, ...wrongs]);
+        
+        optionsContainer.innerHTML = '';
+        optionsContainer.style.display = 'grid';
+        opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.dataset.value = opt;
+            btn.onclick = () => selectOption(btn, opt, correct);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    qNumber.textContent = `Soal ${currentIndex + 1} dari ${TOTAL}`;
+    currentNum.textContent = currentIndex + 1;
+    totalNum.textContent = TOTAL;
+    progressFill.style.width = ((currentIndex) / TOTAL * 100) + '%';
+
+    isAnswered = false;
+    feedback.className = 'feedback';
+    feedback.style.display = 'none';
+    btnNext.style.display = 'none';
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timer--;
+        timerDisplay.textContent = timer;
+        if (timer <= 3) timerDisplay.classList.add('warning');
+        if (timer <= 0) {
+            clearInterval(timerInterval);
+            if (!isAnswered) {
+                isAnswered = true;
+                const btns = document.querySelectorAll('.option-btn');
+                let correctAns;
+                if (currentSession === 1) correctAns = q[ q.answer ];
+                else correctAns = q.answer;
+                btns.forEach(b => { b.classList.add('disabled'); if (b.dataset.value === correctAns) b.classList.add('show-correct'); });
+                feedback.className = 'feedback show wrong';
+                feedback.textContent = `⏰ Waktu habis! Jawaban: ${correctAns}`;
+                feedback.style.display = 'block';
+                wrongAnswers.push({ question: q, yourAnswer: '(tidak dijawab)', correct: correctAns, session: currentSession });
+                btnNext.style.display = 'block';
+            }
+        }
+    }, 1000);
+}
+
+function selectOption(btn, selected, correctAns) {
+    if (isAnswered) return;
+    isAnswered = true;
+    clearInterval(timerInterval);
+    timerDisplay.classList.remove('warning');
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(b => b.classList.add('disabled'));
+    
+    if (selected === correctAns) {
+        btn.classList.add('correct');
+        score++;
+        correctCount.textContent = score;
+        feedback.className = 'feedback show correct';
+        feedback.textContent = '✅ Benar!';
+    } else {
+        btn.classList.add('wrong');
+        btns.forEach(b => { if (b.dataset.value === correctAns) b.classList.add('show-correct'); });
+        feedback.className = 'feedback show wrong';
+        feedback.textContent = '❌ Salah! Jawaban: ' + correctAns;
+        wrongAnswers.push({ question: questions[currentIndex], yourAnswer: selected, correct: correctAns, session: currentSession });
+    }
+    feedback.style.display = 'block';
+    btnNext.style.display = 'block';
+}
+
+function nextQuestion() {
+    currentIndex++;
+    
+    if (currentIndex === SESI1) {
+        sesiScores[0] = score;
+        showTransition(1);
+        return;
+    }
+    if (currentIndex === SESI2) {
+        sesiScores[1] = score - sesiScores[0];
+        showTransition(2);
+        return;
+    }
+    if (currentIndex === SESI3) {
+        sesiScores[2] = score - sesiScores[0] - sesiScores[1];
+        showTransition(3);
+        return;
+    }
+    
+    if (currentIndex >= questions.length) { endQuiz(); } else { loadQuestion(); }
+}
+
+function showTransition(sesi) {
+    quizScreen.classList.add('hidden');
+    transitionScreen.classList.remove('hidden');
+    
+    if (sesi === 1) {
+        transTitle.textContent = 'Sesi 1 Selesai! 🎉';
+        tempScore.textContent = sesiScores[0];
+        transDesc.innerHTML = 'Siap untuk <strong>Sesi 2</strong>?<br>🇯🇵 Jepang → 🇮🇩 Indonesia';
+    } else if (sesi === 2) {
+        transTitle.textContent = 'Sesi 2 Selesai! 🎉';
+        tempScore.textContent = sesiScores[1];
+        transDesc.innerHTML = 'Siap untuk <strong>Sesi 3</strong>?<br>🈶 Kanji → ひ Hiragana';
+    } else if (sesi === 3) {
+        transTitle.textContent = 'Sesi 3 Selesai! 🎉';
+        tempScore.textContent = sesiScores[2];
+        transDesc.innerHTML = 'Siap untuk <strong>Sesi 4</strong>?<br>ひ Hiragana → 🈶 Kanji';
+    }
+}
+
+function startNextSession() {
+    transitionScreen.classList.add('hidden');
+    quizScreen.classList.remove('hidden');
+    loadQuestion();
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+    sesiScores[3] = score - sesiScores[0] - sesiScores[1] - sesiScores[2];
+    
+    quizScreen.classList.add('hidden');
+    resultScreen.style.display = 'block';
+    finalScore.textContent = score;
+    
+    resultName.textContent = `👤 ${userNama} (${userKelas})`;
+    
+    score1.textContent = sesiScores[0];
+    score2.textContent = sesiScores[1];
+    score3.textContent = sesiScores[2];
+    score4.textContent = sesiScores[3];
+
+    const pct = (score / TOTAL) * 100;
+    let title, desc;
+    if (pct === 100) { title = '🏆 Sempurna!'; desc = 'Kamu menguasai semua kosakata!'; }
+    else if (pct >= 80) { title = '🌟 Sangat Bagus!'; desc = 'Kamu sangat paham kosakata!'; }
+    else if (pct >= 60) { title = '👍 Cukup Baik!'; desc = 'Terus belajar, semangat!'; }
+    else if (pct >= 40) { title = '📖 Terus Belajar!'; desc = 'Jangan menyerah, coba lagi!'; }
+    else { title = '💪 Semangat!'; desc = 'Coba lagi, pasti bisa!'; }
+    resultTitle.textContent = title;
+    resultDesc.textContent = desc;
+
+    wrongList.innerHTML = '';
+    if (wrongAnswers.length === 0) {
+        wrongList.innerHTML = '<div class="item">✅ Semua jawaban benar! 🎉</div>';
+    } else {
+        wrongList.innerHTML = `<div style="font-weight:600;margin-bottom:6px;color:#e94560;">❌ ${wrongAnswers.length} salah:</div>`;
+        let currentDivider = 0;
+        wrongAnswers.forEach((w) => {
+            if (w.session !== currentDivider) {
+                currentDivider = w.session;
+                const div = document.createElement('div');
+                div.className = 'session-divider';
+                const labels = ['', '🇮🇩→🇯🇵 Sesi 1', '🇯🇵→🇮🇩 Sesi 2', '🈶→ひ Sesi 3', 'ひ→🈶 Sesi 4'];
+                div.textContent = labels[currentDivider];
+                wrongList.appendChild(div);
+            }
+            const div = document.createElement('div');
+            div.className = 'item';
+            let displayQ;
+            if (w.session === 1) displayQ = w.question.q;
+            else if (w.session === 2) displayQ = w.question[ w.question.answer ];
+            else displayQ = w.question.q;
+            div.innerHTML = `${displayQ}<br><span style="color:#e74c3c;">Kamu: ${w.yourAnswer}</span> | <span style="color:#2ecc71;">Benar: ${w.correct}</span>`;
+            wrongList.appendChild(div);
+        });
+    }
+
+    kirimData();
+}
+
+function kirimData() {
+    const data = {
+        Bab: "Shokyuu 2 Bab 16 - 4 Sesi PG",
+        Nama: userNama,
+        Kelas: userKelas,
+        Skor: score,
+        Total: TOTAL,
+        PG_Benar: sesiScores[0] + sesiScores[1],
+        Essay_Benar: sesiScores[2] + sesiScores[3],
+        Jawaban_Salah: wrongAnswers.map(w => w.correct).join('; ') || 'Tidak ada'
+    };
+
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }).catch(err => console.log('Error:', err));
+}
+
+function startQuiz() {
+    questions = buildQuestions();
+    currentIndex = 0;
+    score = 0;
+    sesiScores = [0, 0, 0, 0];
+    wrongAnswers = [];
+    correctCount.textContent = '0';
+    startScreen.classList.add('hidden');
+    quizScreen.classList.remove('hidden');
+    transitionScreen.classList.add('hidden');
+    resultScreen.style.display = 'none';
+    loadQuestion();
+}
+
+function restartQuiz() {
+    resultScreen.style.display = 'none';
+    startScreen.classList.remove('hidden');
+    quizScreen.classList.add('hidden');
+    transitionScreen.classList.add('hidden');
+    score = 0;
+    currentIndex = 0;
+    sesiScores = [0, 0, 0, 0];
+    wrongAnswers = [];
+    correctCount.textContent = '0';
+    clearInterval(timerInterval);
+    inputNama.value = '';
+    inputKelas.value = '';
+    userNama = '';
+    userKelas = '';
+    btnMulai.disabled = false;
+    btnMulai.textContent = 'Mulai Kuis 🚀';
+}
+</script>
+
+</body>
+</html>
